@@ -40,17 +40,20 @@ offset = scalingCoefficients.Offset;
 chunkSize = round(fetchLength * iqRate);
 fetchTimeout = PrecisionTimeSpan(fetchTimeout);
 
+mkdir('niRFSA_IQ_blocks');
+
 samplesFetched = 0;
 chunksFetched = 0;
+
 while samplesFetched < minSamples
-    [iqData, wfmInfo] = NET.invokeGenericMethod(rfsaSession.Acquisition.IQ, ...
+    [iqData, ~] = NET.invokeGenericMethod(rfsaSession.Acquisition.IQ, ...
         'FetchIQSingleRecordComplex', {'NationalInstruments.ComplexInt16'}, 0, chunkSize, fetchTimeout);
     [real, imag] = ComplexInt16.DecomposeArray(iqData);
     real = int16(real);
     imag = int16(imag);
     samplesFetched = samplesFetched + length(real);
     chunksFetched = chunksFetched + 1;
-    save(sprintf('chunk%d.mat', chunksFetched), 'real', 'imag', 'gain', 'offset');
+    save(sprintf('niRFSA_IQ_blocks/block%d.mat', chunksFetched), 'real', 'imag', 'gain', 'offset');
 end
 
 rfsaSession.Close();
